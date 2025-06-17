@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APIhub Support Bot - Get Help Fast</title>
+  <meta name="description" content="Get instant help with APIhub services. Ask about APIs, authentication, pricing, and more.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+  <div class="chat-container">
+    <div class="header">
+      <h1>🤖 APIhub Support Bot</h1>
+      <p class="subtitle">Get instant help with APIhub services, APIs, authentication, and more!</p>
+      <div class="status-indicator">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">Connecting...</span>
+      </div>
+    </div>
+    
+    <div id="chat-box" class="chat-box">
+      <!-- Messages will be dynamically added here -->
+    </div>
+
+    <div class="quick-actions">
+      <div class="quick-actions-title">Quick Help:</div>
+      <button class="quick-btn" onclick="sendQuickMessage('How do I get an API key?')">🔑 API Key</button>
+      <button class="quick-btn" onclick="sendQuickMessage('What are the pricing plans?')">💰 Pricing</button>
+      <button class="quick-btn" onclick="sendQuickMessage('Show me available APIs')">📚 APIs</button>
+      <button class="quick-btn" onclick="sendQuickMessage('Rate limits information')">⏱️ Rate Limits</button>
+    </div>
+
+    <div class="input-container">
+      <textarea 
+        id="userInput" 
+        placeholder="Ask me anything about APIhub services, APIs, authentication, pricing..."
+        rows="1"
+        maxlength="500"
+      ></textarea>
+      <button onclick="sendMessage()" id="sendButton">
+        <span class="button-text">Send</span>
+        <span class="button-icon">🚀</span>
+      </button>
+    </div>
+
+    <div id="system-info" class="system-info"></div>
+    
+    <div class="footer">
+      <div class="footer-links">
+        <a href="/dashboard" class="footer-link">📊 Admin Dashboard</a>
+        <a href="https://www.apihub.digital" target="_blank" class="footer-link">🌐 APIhub Website</a>
+      </div>
+      <div class="footer-info">
+        <p>Powered by LLaMA 3 • <span id="messageCount">0</span> messages in this session</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden elements for enhanced functionality -->
+  <div id="welcomeModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>Welcome to APIhub Support! 👋</h3>
+      <p>I'm here to help you with:</p>
+      <ul>
+        <li>🔑 API authentication and keys</li>
+        <li>📚 Available APIs and their features</li>
+        <li>💰 Pricing plans and limits</li>
+        <li>🐛 Error messages and troubleshooting</li>
+        <li>📊 Rate limits and usage</li>
+      </ul>
+      <p>If I can't answer your question, I'll automatically create a support ticket for you!</p>
+      <button onclick="closeWelcomeModal()" class="btn btn-primary">Got it! Let's start</button>
+    </div>
+  </div>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 800px;
+      min-height: 600px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Styles */
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    
+    .header h1 {
+      color: #333;
+      font-size: 2.2em;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    
+    .subtitle {
+      color: #666;
+      font-size: 1.1em;
+      margin: 10px 0 20px 0;
+      line-height: 1.4;
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fbbf24;
+      animation: pulse 2s infinite;
+    }
+    
+    .status-dot.online {
+      background: #10b981;
+    }
+    
+    .status-dot.offline {
+      background: #ef4444;
+    }
+    
+    .status-text {
+      font-size: 0.85em;
+      color: #666;
+      font-weight: 500;
+    }
+
+    /* Chat Box Styles */
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 15px;
+      margin-bottom: 20px;
+      min-height: 300px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .message {
+      margin-bottom: 15px;
+      padding: 12px 18px;
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .user-message {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .bot-message {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      color: #333;
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #666;
+      font-style: italic;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 3px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #666;
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Quick Actions */
+    .quick-actions {
+      margin-bottom: 20px;
+    }
+
+    .quick-actions-title {
+      font-size: 0.9em;
+      color: #666;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .quick-btn {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      border-radius: 20px;
+      padding: 8px 16px;
+      margin: 4px 8px 4px 0;
+      cursor: pointer;
+      font-size: 0.85em;
+      transition: all 0.3s ease;
+      color: #667eea;
+      font-weight: 500;
+    }
+
+    .quick-btn:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Input Container */
+    .input-container {
+      display: flex;
+      gap: 15px;
+      align-items: flex-end;
+    }
+    
+    .input-container textarea {
+      flex: 1;
+      padding: 15px 18px;
+      border-radius: 25px;
+      border: 2px solid #e3e8f0;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      background: white;
+      resize: none;
+      min-height: 50px;
+      max-height: 120px;
+      font-family: inherit;
+    }
+
+    .input-container textarea:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .input-container button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 15px 25px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      min-height: 50px;
+    }
+
+    .input-container button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .input-container button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .button-icon {
+      transition: transform 0.2s ease;
+    }
+    
+    .input-container button:hover .button-icon {
+      transform: translateX(3px);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e3e8f0;
+      text-align: center;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .footer-link {
+      color: #667eea;
+      text-decoration: none;
+      font-size: 0.9em;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    
+    .footer-link:hover {
+      color: #764ba2;
+    }
+    
+    .footer-info {
+      font-size: 0.8em;
+      color: #666;
+    }
+    
+    .footer-info p {
+      margin: 0;
+    }
+
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      text-align: left;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    .modal-content h3 {
+      margin-top: 0;
+      color: #333;
+      text-align: center;
+    }
+    
+    .modal-content ul {
+      padding-left: 20px;
+      line-height: 1.6;
+    }
+    
+    .modal-content li {
+      margin-bottom: 8px;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      width: 100%;
+      margin-top: 15px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    /* System Info */
+    .system-info {
+      font-size: 0.8em;
+      color: #666;
+      text-align: center;
+      margin-top: 10px;
+    }
+    
+    /* Message counter */
+    #messageCount {
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-10px); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .chat-container {
+        padding: 20px;
+        min-height: 500px;
+      }
+
+      .header h1 {
+        font-size: 1.8em;
+      }
+
+      .subtitle {
+        font-size: 1em;
+      }
+      
+      .footer-links {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .modal-content {
+        width: 95%;
+        padding: 20px;
+      }
+
+      .input-container {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .input-container button {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .chat-container {
+        padding: 15px;
+      }
+
+      .header h1 {
+        font-size: 1.6em;
+      }
+
+      .quick-btn {
+        font-size: 0.8em;
+        padding: 6px 12px;
+      }
+    }
+  </style>
+  
+  <script>
+    // Enhanced functionality for the index page
+    let messageCount = 0;
+    let isConnected = false;
+    
+    function updateMessageCount() {
+      messageCount++;
+      document.getElementById('messageCount').textContent = messageCount;
+    }
+    
+    function updateStatus(status, text) {
+      const dot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      
+      dot.className = `status-dot ${status}`;
+      statusText.textContent = text;
+    }
+    
+    function closeWelcomeModal() {
+      document.getElementById('welcomeModal').style.display = 'none';
+      document.getElementById('userInput').focus();
+    }
+    
+    function sendQuickMessage(message) {
+      document.getElementById('userInput').value = message;
+      sendMessage();
+    }
+
+    // Auto-resize textarea
+    document.getElementById('userInput').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // Enter key to send message (Shift+Enter for new line)
+    document.getElementById('userInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Main send message function
+    function sendMessage() {
+      const userInput = document.getElementById('userInput');
+      const message = userInput.value.trim();
+      
+      if (!message) return;
+      
+      // Add user message to chat
+      addMessage(message, 'user');
+      userInput.value = '';
+      userInput.style.height = 'auto';
+      
+      // Update message count
+      updateMessageCount();
+      
+      // Disable send button temporarily
+      const sendButton = document.getElementById('sendButton');
+      sendButton.disabled = true;
+      
+      // Show typing indicator
+      showTypingIndicator();
+      
+      // Simulate bot response (replace with actual API call)
+      setTimeout(() => {
+        hideTypingIndicator();
+        sendButton.disabled = false;
+        
+        // Generate bot response based on message
+        const botResponse = generateBotResponse(message);
+        addMessage(botResponse, 'bot');
+        
+        userInput.focus();
+      }, 1000 + Math.random() * 2000);
+    }
+
+    function addMessage(message, type) {
+      const chatBox = document.getElementById('chat-box');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}-message`;
+      messageDiv.textContent = message;
+      
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+      const chatBox = document.getElementById('chat-box');
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message bot-message typing-indicator';
+      typingDiv.id = 'typing-indicator';
+      typingDiv.innerHTML = `
+        <span>Bot is typing</span>
+        <div class="typing-dots">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      `;
+      
+      chatBox.appendChild(typingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      const typingIndicator = document.getElementById('typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+    }
+
+    function generateBotResponse(userMessage) {
+      const message = userMessage.toLowerCase();
+      
+      if (message.includes('api key')) {
+        return "🔑 To get your API key: 1) Sign up at apihub.digital 2) Go to your dashboard 3) Click 'Generate API Key' 4) Copy and save it securely. Your API key is unique and should never be shared!";
+      } else if (message.includes('pricing') || message.includes('plan')) {
+        return "💰 Our pricing plans: Free (1000 requests/month), Basic ($9.99 - 10K requests), Pro ($29.99 - 100K requests), Enterprise (Custom pricing). All plans include 24/7 support and detailed analytics!";
+      } else if (message.includes('api') && (message.includes('available') || message.includes('list') || message.includes('show'))) {
+        return "📚 Available APIs: Weather API, Currency Exchange, User Authentication, Payment Gateway, Image Processing, Text Analysis, Geolocation, and 50+ more! Check our documentation for detailed endpoints.";
+      } else if (message.includes('rate limit')) {
+        return "⏱️ Rate limits depend on your plan: Free (60 req/min), Basic (300 req/min), Pro (1000 req/min), Enterprise (Custom). You can check your current usage in the dashboard.";
+      } else if (message.includes('error') || message.includes('bug') || message.includes('problem')) {
+        return "🐛 I can help troubleshoot! Common issues: 1) Check your API key 2) Verify endpoint URL 3) Check rate limits 4) Review request format. What specific error are you seeing?";
+      } else if (message.includes('hello') || message.includes('hi') || message.includes('help')) {
+        return "👋 Hello! I'm here to help with all your APIhub questions. Ask me about API keys, pricing, available APIs, rate limits, or any technical issues you're facing!";
+      } else {
+        return "🤖 I understand you're asking about: '" + userMessage + "'. Let me help you with that! If you need immediate assistance, I can also create a support ticket for you. What specific aspect would you like to know more about?";
+      }
+    }
+
+    // Initialize the chat
+    function initializeChat() {
+      updateStatus('online', 'Connected');
+      isConnected = true;
+      
+      // Add welcome message
+      setTimeout(() => {
+        addMessage("👋 Welcome to APIhub Support! I'm here to help you with APIs, authentication, pricing, and more. Try the quick actions below or ask me anything!", 'bot');
+      }, 500);
+      
+      // Focus on input
+      document.getElementById('userInput').focus();
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeChat();
+      
+      // Show welcome modal for new users (optional)
+      // document.getElementById('welcomeModal').style.display = 'flex';
+    });
+
+    // Handle connection status
+    window.addEventListener('online', () => {
+      updateStatus('online', 'Connected');
+      isConnected = true;
+    });
+
+    window.addEventListener('offline', () => {
+      updateStatus('offline', 'Disconnected');
+      isConnected = false;
+    });
+  </script>
+</body>
+</html>

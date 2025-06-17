@@ -1,0 +1,145 @@
+# APIhub Knowledge Base
+
+APIhub (https://www.apihub.digital) provides developers with simple, powerful APIs for building modern applications. This knowledge base contains essential information for using APIhub effectively.
+
+---
+
+🔐 Authentication:
+All APIs require an API key to access.
+- Header Format:
+  X-API-Key: YOUR_API_KEY
+
+Without a valid key, requests will be denied with a 401 Unauthorized error.
+
+---
+
+📚 Available APIs:
+
+1. 🖼️ Image API
+   - Description: Generate AI-based images using text prompts, apply filters, or resize.
+   - Endpoint: /api/image
+   - Method: POST
+   - Rate Limit: 100 requests/min
+   - Response: JSON (base64 image or URL)
+   - Error Codes: 400, 401, 429
+   - Access: Pro Plan only
+
+2. 🌦️ Weather API
+   - Description: Get real-time weather data by city or coordinates.
+   - Endpoint: /api/weather
+   - Method: GET
+   - Rate Limit: 75 requests/min
+   - Response: JSON (temperature, condition, humidity)
+   - Error Codes: 400, 401, 500
+   - Access: Free & Pro Plans
+
+3. 🛒 Ecommerce API
+   - Description: Get product listings, price comparisons, and seller ratings.
+   - Endpoint: /api/ecommerce
+   - Method: GET
+   - Rate Limit: 50 requests/min
+   - Response: JSON (products array)
+   - Error Codes: 401, 429
+   - Access: Pro & Enterprise
+
+4. 📦 QR Code API
+   - Description: Generate customizable QR codes from text or URLs.
+   - Endpoint: /api/qrcode
+   - Method: POST
+   - Rate Limit: 120 requests/min
+   - Response: JSON (base64 image)
+   - Error Codes: 400, 401
+   - Access: Free & Pro Plans
+
+5. 👤 ProfilePic API
+   - Description: Create profile pictures using AI or apply aesthetic filters.
+   - Endpoint: /api/profilepic
+   - Method: POST
+   - Rate Limit: 90 requests/min
+   - Response: JSON (image URL)
+   - Error Codes: 400, 429
+   - Access: Pro Plan
+
+6. 😂 Jokes API
+   - Description: Get random developer jokes for fun or integration.
+   - Endpoint: /api/jokes
+   - Method: GET
+   - Rate Limit: 200 requests/min
+   - Response: JSON (joke text)
+   - Error Codes: 401
+   - Access: Free Plan
+
+7. 🔁 ImageToQR API
+   - Description: Convert images into embedded QR codes with visual content.
+   - Endpoint: /api/imagetoqr
+   - Method: POST
+   - Rate Limit: 80 requests/min
+   - Response: JSON (QR code with embedded image)
+   - Error Codes: 400, 429
+   - Access: Pro Plan
+
+8. 🎥 Video API
+   - Description: Extract audio from video, compress, or create previews.
+   - Endpoint: /api/video
+   - Method: POST
+   - Rate Limit: 60 requests/min
+   - Response: JSON (compressed video link)
+   - Error Codes: 401, 500
+   - Access: Pro & Enterprise
+
+---
+
+📈 Global Rate Limit:
+- Each key can make a maximum of 1000 requests/min across all APIs.
+- Headers:
+  - X-RateLimit-Limit
+  - X-RateLimit-Remaining
+  - X-RateLimit-Reset
+
+---
+
+💸 Pricing Plans:
+1. Free Plan – ₹0/month
+   - Access to: Weather, QR Code, Jokes API
+   - Limit: 1000 requests/day
+
+2. Pro Plan – ₹499/month
+   - Access to all APIs except Enterprise-only
+   - Limit: 50,000 requests/month
+
+3. Enterprise Plan – Custom
+   - SLA guarantees, dedicated infra, 24x7 support
+   - Unlimited usage, admin tools
+
+---
+
+⚠️ Error Messages:
+
+| Code | Meaning               | Action                     |
+|------|------------------------|----------------------------|
+| 400  | Bad Request           | Check payload or params    |
+| 401  | Unauthorized          | Invalid/missing API key    |
+| 429  | Too Many Requests     | Rate limit exceeded        |
+| 500  | Server Error          | Try again later            |
+
+---
+
+✅ Support Ticket Creation (when chatbot fails):
+- If bot can't answer a user query:
+  - A ticket is created automatically with:
+    - Unique Ticket ID
+    - Original user question
+    - Timestamp
+    - Optional contact info
+  - Ticket confirmation sent to user
+  - Admin notified via dashboard
+
+---
+
+🧠 Tip:
+For best usage, always monitor your rate limits and handle errors gracefully. Upgrade plan if necessary for high-traffic apps.
+
+---
+
+📌 Disclaimer:
+This mock data is based on publicly observable patterns and typical API structures. Please refer to APIhub's official docs for live production usage.
