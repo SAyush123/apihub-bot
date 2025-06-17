@@ -1,0 +1,9 @@
+Flask==2.3.3
+requests
+ollama
+json
+uuid
+datetime
+os
+time
+requests
